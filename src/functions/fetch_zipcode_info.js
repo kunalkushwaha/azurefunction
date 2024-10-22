@@ -1,6 +1,5 @@
 const { app } = require('@azure/functions');
-const axios = require('axios');
-const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 
 app.http('fetch_zipcode_info', {
     methods: ['GET', 'POST'],
@@ -22,29 +21,25 @@ app.http('fetch_zipcode_info', {
             const url = `https://www.japanpostalcode.net/search.php?keyword=${zipcode}`;
 
             try {
-                const response = await axios.get(url, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-                    }
-                });
-                const html_content = response.data;
-                const $ = cheerio.load(html_content);
+                const browser = await puppeteer.launch();
+                const page = await browser.newPage();
+                await page.goto(url, { waitUntil: 'networkidle2' });
 
-                const search_result_header = $('h1').text();
-                const search_result_summary = $('p[style="font-size:18px;"]').text();
+                const search_result_header = await page.$eval('h1', el => el.textContent);
+                const search_result_summary = await page.$eval('p[style="font-size:18px;"]', el => el.textContent);
 
-                const districts = [];
-                $('table.search-table tr').each((index, element) => {
-                    const cells = $(element).find('td');
-                    if (cells.length > 1) {
-                        const district = $(cells[1]).text().trim();
-                        districts.push(district);
-                    }
+                const districts = await page.$$eval('table.search-table tr', rows => {
+                    return rows.map(row => {
+                        const cells = row.querySelectorAll('td');
+                        return cells.length > 1 ? cells[1].textContent.trim() : null;
+                    }).filter(district => district);
                 });
+
+                await browser.close();
 
                 if (districts.length === 0) {
                     return { 
-                        body: 'No district or city found for the provided zipcode',
+                        body: 'No district or city found for the provided postal code',
                         status: 404
                     };
                 }
@@ -62,14 +57,8 @@ app.http('fetch_zipcode_info', {
                 };
             } catch (error) {
                 context.log('Error fetching or parsing data:', error);
-                if (error.response && error.response.status === 403) {
-                    return { 
-                        body: 'Access to the zip code information is forbidden. Please try again later.',
-                        status: 403
-                    };
-                }
                 return { 
-                    body: 'Error fetching zip code information',
+                    body: 'Error fetching postal code information',
                     status: 500
                 };
             }
