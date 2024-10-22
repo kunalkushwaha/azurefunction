@@ -21,10 +21,14 @@ app.http('fetch_zipcode_info', {
         if (zipcode) {
             const url = `https://www.japanpostalcode.net/search.php?keyword=${zipcode}`;
 
+            // Define the cookies to be sent with the request
+            const cookies = 'get_postal_code=#2133435; kunal_code=#32423534654';
+
             try {
                 const response = await axios.get(url, {
                     headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+                        'Cookie': cookies
                     }
                 });
                 const html_content = response.data;
@@ -44,7 +48,7 @@ app.http('fetch_zipcode_info', {
 
                 if (districts.length === 0) {
                     return { 
-                        body: 'No district or city found for the provided zipcode',
+                        body: 'No district or city found for the provided postal code',
                         status: 404
                     };
                 }
@@ -62,14 +66,8 @@ app.http('fetch_zipcode_info', {
                 };
             } catch (error) {
                 context.log('Error fetching or parsing data:', error);
-                if (error.response && error.response.status === 403) {
-                    return { 
-                        body: 'Access to the zip code information is forbidden. Please try again later.',
-                        status: 403
-                    };
-                }
                 return { 
-                    body: 'Error fetching zip code information',
+                    body: 'Error fetching postal code information',
                     status: 500
                 };
             }
