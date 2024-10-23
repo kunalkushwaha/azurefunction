@@ -12,6 +12,7 @@
     "@azure/functions": "^4.0.0",
     "axios": "^1.7.7",
     "cheerio": "^1.0.0",
+    "chromium": "^3.0.3",
     "proj4": "^2.12.1",
     "puppeteer": "^23.6.0"
   },
