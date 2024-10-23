@@ -35,7 +35,11 @@ app.http('check_coverage_area', {
             context.log(`Geocoding city: ${city}`);
             // Geocode the city name to get latitude and longitude
             const geocodeUrl = `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(city)}&format=json&limit=1`;
-            const geocodeResponse = await axios.get(geocodeUrl);
+            const geocodeResponse = await axios.get(geocodeUrl, {
+                headers: {
+                    'User-Agent': 'RakutenCoverageMap/1.0 (kk@kk.com)' // Set a custom User-Agent
+                }
+            });
             const geocodeData = geocodeResponse.data;
 
             if (geocodeData.length === 0) {
