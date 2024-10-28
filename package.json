@@ -6,7 +6,7 @@
   "scripts": {
     "start": "func start",
     "test": "echo \"No tests yet...\"",
-    "postinstall": "npx puppeteer install"
+    "postinstall": "npx puppeteer browsers install chrome"
   },
   "dependencies": {
     "@azure/functions": "^4.0.0",
