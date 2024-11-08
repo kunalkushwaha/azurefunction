@@ -24,7 +24,9 @@ app.http('ch-zipcode', {
             try {
                 // Launch Puppeteer and navigate to the URL
                 const browser = await puppeteer.launch({
-                    args: ['--no-sandbox', '--disable-setuid-sandbox']
+                    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                    headless: true,
+                    executablePath: './chrome-linux/chrome'
                 });
                 const page = await browser.newPage();
 
